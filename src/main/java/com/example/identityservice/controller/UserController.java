@@ -14,6 +14,8 @@ import com.example.identityservice.dto.response.ApiResponse;
 import com.example.identityservice.entity.User;
 import com.example.identityservice.service.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -25,7 +27,7 @@ public class UserController {
 	}
 
 	@PostMapping
-	public ResponseEntity<ApiResponse<User>> createUser(@RequestBody CreateUserRequest request) {
+	public ResponseEntity<ApiResponse<User>> createUser(@RequestBody @Valid CreateUserRequest request) {
 		ApiResponse<User> newUser = userService.createUser(request);
 		return new ResponseEntity<>(newUser, HttpStatus.CREATED);
 	}

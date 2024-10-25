@@ -7,5 +7,8 @@ import com.example.identityservice.entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
+	
+	public boolean existsByUsername(String username);
 
+	public boolean existsByEmail(String email);
 }
