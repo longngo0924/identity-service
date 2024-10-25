@@ -2,24 +2,39 @@ package com.example.identityservice.service;
 
 import org.springframework.stereotype.Service;
 
+import com.example.identityservice.dto.request.CreateUserRequest;
+import com.example.identityservice.dto.response.ApiResponse;
 import com.example.identityservice.entity.User;
+import com.example.identityservice.mapper.UserMapper;
 import com.example.identityservice.repository.UserRepository;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class UserService {
 
-	private final UserRepository userRepository;
+	UserRepository userRepository;
+	UserMapper userMapper;
 
-	public UserService(UserRepository userRepository) {
-		this.userRepository = userRepository;
+	public ApiResponse<User> createUser(CreateUserRequest request) {
+		User user = userMapper.toUser(request);
+		User newUser = userRepository.save(user);
+		ApiResponse<User> apiResponse = new ApiResponse<>();
+		apiResponse.setCode(1000);
+		apiResponse.setResult(newUser);
+		return apiResponse;
 	}
 
-	public User createUser(User user) {
-		return userRepository.save(user);
-	}
-
-	public User getUserById(String id) {
-		return userRepository.findById(id).get();
+	public ApiResponse<User> getUserById(String id) {
+		User user = userRepository.findById(id).get();
+		ApiResponse<User> apiResponse = new ApiResponse<>();
+		apiResponse.setCode(1000);
+		apiResponse.setResult(user);
+		return apiResponse;
 	}
 
 	public boolean deleteUser(String id) {

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.identityservice.dto.request.CreateUserRequest;
+import com.example.identityservice.dto.response.ApiResponse;
 import com.example.identityservice.entity.User;
 import com.example.identityservice.service.UserService;
 
@@ -23,14 +25,14 @@ public class UserController {
 	}
 
 	@PostMapping
-	public ResponseEntity<User> createUser(@RequestBody User user) {
-		User newUser = userService.createUser(user);
+	public ResponseEntity<ApiResponse<User>> createUser(@RequestBody CreateUserRequest request) {
+		ApiResponse<User> newUser = userService.createUser(request);
 		return new ResponseEntity<>(newUser, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<User> getUserById(@PathVariable("id") String id) {
-		User user = userService.getUserById(id);
+	public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable("id") String id) {
+		ApiResponse<User> user = userService.getUserById(id);
 		return new ResponseEntity<>(user, HttpStatus.OK);
 	}
 }
