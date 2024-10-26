@@ -1,5 +1,7 @@
 package com.example.identityservice.controller;
 
+import java.text.ParseException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,9 +10,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.identityservice.dto.request.AuthenticationRequest;
+import com.example.identityservice.dto.request.IntrospectRequest;
 import com.example.identityservice.dto.response.ApiResponse;
 import com.example.identityservice.dto.response.AuthenticationResponse;
+import com.example.identityservice.dto.response.IntrospectResponse;
 import com.example.identityservice.service.AuthenticationService;
+import com.nimbusds.jose.JOSEException;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +35,15 @@ public class AuthenticationController {
 		ApiResponse<AuthenticationResponse> response = ApiResponse.<AuthenticationResponse>builder().code(1000)
 				.result(authenticationResponse).build();
 
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/introspect")
+	public ResponseEntity<ApiResponse<IntrospectResponse>> introspectToken(@RequestBody IntrospectRequest request)
+			throws JOSEException, ParseException {
+		IntrospectResponse introspectResponse = authenticationService.introspectToken(request);
+		ApiResponse<IntrospectResponse> response = ApiResponse.<IntrospectResponse>builder().code(1000)
+				.result(introspectResponse).build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }
