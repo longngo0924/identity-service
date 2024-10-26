@@ -1,0 +1,19 @@
+{
+	"properties": [
+		{
+			"name": "jwt.signing-key",
+			"type": "java.lang.String",
+			"description": "Secrect signing key"
+		},
+		{
+			"name": "jwt.expire-time",
+			"type": "java.lang.String",
+			"description": "JWT expiration time"
+		},
+		{
+			"name": "jwt.issuer",
+			"type": "java.lang.String",
+			"description": "JWT Issuer"
+		}
+	]
+}

@@ -14,10 +14,12 @@ import com.example.identityservice.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
 	UserRepository userRepository;
@@ -43,7 +45,7 @@ public class UserService {
 	}
 
 	public UserResponse getUserById(String id) {
-		User user = userRepository.findById(id).get();
+		User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 		return userMapper.toUserResponse(user);
 	}
 
@@ -52,7 +54,7 @@ public class UserService {
 			userRepository.deleteById(id);
 			return true;
 		} catch (Exception e) {
-			System.out.println(e);
+			log.error(e.getMessage());
 		}
 		return false;
 

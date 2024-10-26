@@ -13,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthenticationResponse {
-	
+
+	String token;
 	boolean authenticated;
 }
