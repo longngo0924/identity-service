@@ -1,9 +1,10 @@
 package com.example.identityservice.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.identityservice.dto.request.CreateUserRequest;
-import com.example.identityservice.dto.response.ApiResponse;
+import com.example.identityservice.dto.response.UserResponse;
 import com.example.identityservice.entity.User;
 import com.example.identityservice.exception.AppException;
 import com.example.identityservice.exception.ErrorCode;
@@ -21,30 +22,29 @@ public class UserService {
 
 	UserRepository userRepository;
 	UserMapper userMapper;
+	PasswordEncoder passwordEncoder;
 
-	public ApiResponse<User> createUser(CreateUserRequest request) {
+	public UserResponse createUser(CreateUserRequest request) {
 
 		boolean isUsernameExisted = userRepository.existsByUsername(request.getUsername());
 		boolean isEmailExisted = userRepository.existsByEmail(request.getEmail());
-		
+
 		if (isUsernameExisted || isEmailExisted) {
 			throw new AppException(ErrorCode.USER_EXISTED);
 		}
 
+		String encodedPassword = passwordEncoder.encode(request.getPassword());
+		request.setPassword(encodedPassword);
+
 		User user = userMapper.toUser(request);
 		User newUser = userRepository.save(user);
-		ApiResponse<User> apiResponse = new ApiResponse<>();
-		apiResponse.setCode(1000);
-		apiResponse.setResult(newUser);
-		return apiResponse;
+
+		return userMapper.toUserResponse(newUser);
 	}
 
-	public ApiResponse<User> getUserById(String id) {
+	public UserResponse getUserById(String id) {
 		User user = userRepository.findById(id).get();
-		ApiResponse<User> apiResponse = new ApiResponse<>();
-		apiResponse.setCode(1000);
-		apiResponse.setResult(user);
-		return apiResponse;
+		return userMapper.toUserResponse(user);
 	}
 
 	public boolean deleteUser(String id) {

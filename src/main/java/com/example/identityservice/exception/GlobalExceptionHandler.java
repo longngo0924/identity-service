@@ -17,9 +17,9 @@ public class GlobalExceptionHandler {
 	ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException exception) {
 		log.error("Exception: {}", exception.getMessage());
 
-		ApiResponse<Object> apiResponse = new ApiResponse<>();
-		apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
-		apiResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
+		ApiResponse<Object> apiResponse = ApiResponse.<Object>builder()
+				.code(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
+				.message(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage()).build();
 
 		return ResponseEntity.badRequest().body(apiResponse);
 
@@ -28,9 +28,8 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(AppException.class)
 	ResponseEntity<ApiResponse<Object>> handleAppException(AppException exception) {
 
-		ApiResponse<Object> apiResponse = new ApiResponse<>();
-		apiResponse.setCode(exception.getErrorCode().getCode());
-		apiResponse.setMessage(exception.getErrorCode().getMessage());
+		ApiResponse<Object> apiResponse = ApiResponse.<Object>builder().code(exception.getErrorCode().getCode())
+				.message(exception.getErrorCode().getMessage()).build();
 
 		return new ResponseEntity<>(apiResponse, exception.getErrorCode().getHttpStatus());
 
@@ -40,7 +39,7 @@ public class GlobalExceptionHandler {
 	ResponseEntity<ApiResponse<Object>> handleValidationException(MethodArgumentNotValidException exception) {
 
 		ErrorCode errorCode = ErrorCode.INVALID_KEY;
-		
+
 		try {
 			String enumKey = exception.getFieldError().getDefaultMessage();
 			errorCode = ErrorCode.valueOf(enumKey);
@@ -48,9 +47,8 @@ public class GlobalExceptionHandler {
 			log.error(e.getMessage());
 		}
 
-		ApiResponse<Object> apiResponse = new ApiResponse<>();
-		apiResponse.setCode(errorCode.getCode());
-		apiResponse.setMessage(errorCode.getMessage());
+		ApiResponse<Object> apiResponse = ApiResponse.<Object>builder().code(errorCode.getCode())
+				.message(errorCode.getMessage()).build();
 
 		return new ResponseEntity<>(apiResponse, errorCode.getHttpStatus());
 

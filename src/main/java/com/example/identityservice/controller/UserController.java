@@ -11,30 +11,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.identityservice.dto.request.CreateUserRequest;
 import com.example.identityservice.dto.response.ApiResponse;
-import com.example.identityservice.entity.User;
+import com.example.identityservice.dto.response.UserResponse;
 import com.example.identityservice.service.UserService;
 
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
 
-	private final UserService userService;
-
-	public UserController(UserService userService) {
-		this.userService = userService;
-	}
+	UserService userService;
 
 	@PostMapping
-	public ResponseEntity<ApiResponse<User>> createUser(@RequestBody @Valid CreateUserRequest request) {
-		ApiResponse<User> newUser = userService.createUser(request);
-		return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+	public ResponseEntity<ApiResponse<UserResponse>> createUser(@RequestBody @Valid CreateUserRequest request) {
+		UserResponse newUser = userService.createUser(request);
+		ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder().code(1000).result(newUser).build();
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable("id") String id) {
-		ApiResponse<User> user = userService.getUserById(id);
-		return new ResponseEntity<>(user, HttpStatus.OK);
+	public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable("id") String id) {
+		UserResponse user = userService.getUserById(id);
+		ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder().code(1000).result(user).build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }
