@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +30,7 @@ public class UserController {
 
 	UserService userService;
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping()
 	public ResponseEntity<ApiResponse<List<UserResponse>>> getUsers() {
 		List<UserResponse> users = userService.getUsers();
@@ -43,13 +45,24 @@ public class UserController {
 	public ResponseEntity<ApiResponse<UserResponse>> createUser(@RequestBody @Valid CreateUserRequest request) {
 		UserResponse newUser = userService.createUser(request);
 		ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder().code(1000).result(newUser).build();
+
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable("id") String id) {
 		UserResponse user = userService.getUserById(id);
 		ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder().code(1000).result(user).build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/user-info")
+	public ResponseEntity<ApiResponse<UserResponse>> getUserInfo() {
+		UserResponse user = userService.getUserInfo();
+		ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder().code(1000).result(user).build();
+
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

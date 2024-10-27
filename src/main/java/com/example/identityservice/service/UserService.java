@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -74,5 +75,14 @@ public class UserService {
 	public List<UserResponse> getUsers() {
 		List<User> users = userRepository.findAll();
 		return users.stream().map(user -> userMapper.toUserResponse(user)).toList();
+	}
+
+	public UserResponse getUserInfo() {
+		var context = SecurityContextHolder.getContext();
+		String username = context.getAuthentication().getName();
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		
+		return userMapper.toUserResponse(user);
 	}
 }
