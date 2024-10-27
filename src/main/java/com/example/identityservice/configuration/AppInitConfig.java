@@ -9,8 +9,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.example.identityservice.entity.Permission;
+import com.example.identityservice.entity.Role;
 import com.example.identityservice.entity.User;
-import com.example.identityservice.enums.Role;
+import com.example.identityservice.enums.Roles;
+import com.example.identityservice.repository.PermissionRepository;
+import com.example.identityservice.repository.RoleRepository;
 import com.example.identityservice.repository.UserRepository;
 
 import lombok.AccessLevel;
@@ -26,6 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 public class AppInitConfig {
 
 	UserRepository userRepository;
+	PermissionRepository permissionRepository;
+	RoleRepository roleRepository;
 	PasswordEncoder passwordEncoder;
 
 	@NonFinal
@@ -40,15 +46,29 @@ public class AppInitConfig {
 	ApplicationRunner applicationRunner() {
 		return args -> {
 			if (userRepository.findByUsername(adminUsername).isEmpty()) {
-				Set<String> roles = new HashSet<>();
-				roles.add(Role.ADMIN.name());
+
+				Permission permission = Permission.builder().name("FULL_ACCESS").description("Full Access Permission")
+						.build();
+				
+				var newPermission = permissionRepository.save(permission);
+				
+				Set<Permission> permissions = new HashSet<>();				
+				permissions.add(newPermission);
+
+				Role role = Role.builder().name(Roles.ADMIN.name()).description("Admin Role").permissions(permissions)
+						.build();
+				
+				var newRole = roleRepository.save(role);
+
+				Set<Role> roles = new HashSet<>();
+				roles.add(newRole);
 
 				User user = User.builder().username(adminUsername).password(passwordEncoder.encode(adminPassword))
 						.roles(roles).build();
 
 				userRepository.save(user);
 
-				log.warn("Admin was create with username {} and password {}", adminUsername, adminPassword);
+				log.warn("Admin was create with username: {} and password: {}", adminUsername, adminPassword);
 			}
 
 		};

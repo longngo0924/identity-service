@@ -11,6 +11,7 @@ import com.example.identityservice.entity.User;
 public interface UserMapper {
 
 	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "roles", ignore = true)
 	User toUser(CreateUserRequest request);
 
 	UserResponse toUserResponse(User user);

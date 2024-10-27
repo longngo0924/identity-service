@@ -3,8 +3,6 @@ package com.example.identityservice.entity;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
@@ -21,16 +19,12 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "\"user\"")
-public class User {
-
+@Table(name = "role")
+public class Role {
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	String id;
-	String username;
-	String email;
-	String password;
+	String name;
+	String description;
 
 	@ManyToMany
-	Set<Role> roles;
+	Set<Permission> permissions;
 }

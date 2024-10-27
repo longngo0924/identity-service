@@ -14,9 +14,10 @@ public enum ErrorCode {
 	INVALID_USERNAME(1003, "Username must be at least 8 characters", HttpStatus.BAD_REQUEST),
 	INVALID_PASSWORD(1004, "Password must be at least 8 characters", HttpStatus.BAD_REQUEST),
 	USER_NOT_EXISTED(1005, "User not existed", HttpStatus.NOT_FOUND),
-	UNAUTHENTICATED(1006,
-			"Unauthenticated", HttpStatus.UNAUTHORIZED),
+	UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
 	ACCESS_DENINED(1007, "Access denied", HttpStatus.FORBIDDEN),
+	ROLE_NOT_EXISTED(1008, "Role not existed", HttpStatus.BAD_REQUEST),
+	PERMISSION_NOT_EXISTED(1009, "Permission not existed", HttpStatus.BAD_REQUEST),
 
 	INVALID_KEY(9998, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
 	UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),;

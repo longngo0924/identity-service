@@ -2,7 +2,6 @@ package com.example.identityservice.service;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,11 +9,13 @@ import org.springframework.stereotype.Service;
 
 import com.example.identityservice.dto.request.CreateUserRequest;
 import com.example.identityservice.dto.response.UserResponse;
+import com.example.identityservice.entity.Role;
 import com.example.identityservice.entity.User;
-import com.example.identityservice.enums.Role;
+import com.example.identityservice.enums.Roles;
 import com.example.identityservice.exception.AppException;
 import com.example.identityservice.exception.ErrorCode;
 import com.example.identityservice.mapper.UserMapper;
+import com.example.identityservice.repository.RoleRepository;
 import com.example.identityservice.repository.UserRepository;
 
 import lombok.AccessLevel;
@@ -31,6 +32,7 @@ public class UserService {
 	UserRepository userRepository;
 	UserMapper userMapper;
 	PasswordEncoder passwordEncoder;
+	RoleRepository roleRepository;
 
 	public UserResponse createUser(CreateUserRequest request) {
 
@@ -46,8 +48,11 @@ public class UserService {
 
 		User user = userMapper.toUser(request);
 
-		Set<String> roles = new HashSet<>();
-		roles.add(Role.USER.name());
+		Role role = roleRepository.findById(Roles.USER.name())
+				.orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+
+		var roles = new HashSet<Role>();
+		roles.add(role);
 
 		user.setRoles(roles);
 
@@ -82,7 +87,7 @@ public class UserService {
 		String username = context.getAuthentication().getName();
 		User user = userRepository.findByUsername(username)
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-		
+
 		return userMapper.toUserResponse(user);
 	}
 }

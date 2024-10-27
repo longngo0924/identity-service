@@ -14,9 +14,9 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponse {
-	String id;
-	String username;
-	String email;
-	Set<RoleResponse> roles;
+public class RoleResponse {
+	String name;
+	String description;
+
+	Set<PermissionResponse> permissions;
 }

@@ -1,4 +1,4 @@
-package com.example.identityservice.dto.response;
+package com.example.identityservice.dto.request;
 
 import java.util.Set;
 
@@ -11,12 +11,12 @@ import lombok.experimental.FieldDefaults;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponse {
-	String id;
-	String username;
-	String email;
-	Set<RoleResponse> roles;
+@Builder
+public class CreateRoleRequest {
+	String name;
+	String description;
+
+	Set<String> permissions;
 }
