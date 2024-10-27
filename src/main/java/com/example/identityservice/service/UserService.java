@@ -1,17 +1,17 @@
 package com.example.identityservice.service;
 
-import java.util.HashSet;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.example.identityservice.dto.request.CreateUserRequest;
+import com.example.identityservice.dto.request.UpdateUserRequest;
 import com.example.identityservice.dto.response.UserResponse;
-import com.example.identityservice.entity.Role;
 import com.example.identityservice.entity.User;
-import com.example.identityservice.enums.Roles;
 import com.example.identityservice.exception.AppException;
 import com.example.identityservice.exception.ErrorCode;
 import com.example.identityservice.mapper.UserMapper;
@@ -48,14 +48,6 @@ public class UserService {
 
 		User user = userMapper.toUser(request);
 
-		Role role = roleRepository.findById(Roles.USER.name())
-				.orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
-
-		var roles = new HashSet<Role>();
-		roles.add(role);
-
-		user.setRoles(roles);
-
 		User newUser = userRepository.save(user);
 
 		return userMapper.toUserResponse(newUser);
@@ -89,5 +81,28 @@ public class UserService {
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
 		return userMapper.toUserResponse(user);
+	}
+
+	public UserResponse updateUser(String id, UpdateUserRequest request) {
+		User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+		if (StringUtils.isNotBlank(request.getPassword())) {
+			String encodedPassword = passwordEncoder.encode(request.getPassword());
+			user.setPassword(encodedPassword);
+		}
+
+		if (!CollectionUtils.isEmpty(request.getRoles())) {
+			var roles = roleRepository.findAllById(request.getRoles());
+			var currentRoles = user.getRoles();
+
+			roles.forEach(role -> {
+				if (!currentRoles.contains(role)) {
+					user.getRoles().add(role);
+				}
+			});
+		}
+
+		User updatedUser = userRepository.save(user);
+		return userMapper.toUserResponse(updatedUser);
 	}
 }

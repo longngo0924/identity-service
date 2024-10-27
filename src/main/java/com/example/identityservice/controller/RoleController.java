@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.identityservice.dto.request.CreateRoleRequest;
 import com.example.identityservice.dto.response.ApiResponse;
-import com.example.identityservice.dto.response.PermissionResponse;
 import com.example.identityservice.dto.response.RoleResponse;
 import com.example.identityservice.service.RoleService;
 
@@ -28,6 +28,7 @@ import lombok.experimental.FieldDefaults;
 public class RoleController {
 	RoleService roleService;
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<ApiResponse<RoleResponse>> createPermission(@RequestBody @Valid CreateRoleRequest request) {
 		RoleResponse newRole = roleService.create(request);
@@ -36,6 +37,7 @@ public class RoleController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
+	@PreAuthorize("hasAuthority('READ_ROLE') || hasRole('ADMIN')")
 	@GetMapping()
 	public ResponseEntity<ApiResponse<List<RoleResponse>>> getPermissions() {
 		List<RoleResponse> roles = roleService.getAll();

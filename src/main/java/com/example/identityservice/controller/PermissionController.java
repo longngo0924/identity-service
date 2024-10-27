@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,6 +28,7 @@ import lombok.experimental.FieldDefaults;
 public class PermissionController {
 	PermissionService permissionService;
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<ApiResponse<PermissionResponse>> createPermission(
 			@RequestBody @Valid CreatePermissionRequest request) {
@@ -37,6 +39,7 @@ public class PermissionController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
+	@PreAuthorize("hasAuthority('READ_PERMISSION') || hasRole('ADMIN')")
 	@GetMapping()
 	public ResponseEntity<ApiResponse<List<PermissionResponse>>> getPermissions() {
 		List<PermissionResponse> permissions = permissionService.getAll();
