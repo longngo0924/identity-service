@@ -4,10 +4,12 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.example.identityservice.dto.request.AuthenticationRequest;
 import com.example.identityservice.dto.request.IntrospectRequest;
@@ -65,18 +67,19 @@ public class AuthenticationService {
 		if (!authenticated)
 			throw new AppException(ErrorCode.UNAUTHORIZED);
 
-		String token = generateToken(request.getUsername());
+		String token = generateToken(user);
 
 		return AuthenticationResponse.builder().authenticated(true).token(token).build();
 	}
 
-	private String generateToken(String username) {
+	private String generateToken(User user) {
 
 		JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
 		int expireTime = Integer.parseInt(jwtExpireTime);
 
-		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().subject(username).issuer(jwtIssuer).issueTime(new Date())
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().subject(user.getUsername()).issuer(jwtIssuer)
+				.issueTime(new Date()).claim("scope", buildScope(user))
 				.expirationTime(new Date(Instant.now().plus(expireTime, ChronoUnit.HOURS).toEpochMilli())).build();
 
 		Payload payload = new Payload(claimsSet.toJSONObject());
@@ -90,6 +93,16 @@ public class AuthenticationService {
 			log.error(e.getMessage());
 			throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
 		}
+	}
+
+	private String buildScope(User user) {
+		StringJoiner stringJoiner = new StringJoiner(" ");
+		
+		if (!CollectionUtils.isEmpty(user.getRoles())) {
+			user.getRoles().forEach(stringJoiner::add);
+		}
+
+		return stringJoiner.toString();
 	}
 
 	public IntrospectResponse introspectToken(IntrospectRequest request) throws JOSEException, ParseException {

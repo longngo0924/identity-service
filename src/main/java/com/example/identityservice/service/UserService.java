@@ -1,11 +1,16 @@
 package com.example.identityservice.service;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.identityservice.dto.request.CreateUserRequest;
 import com.example.identityservice.dto.response.UserResponse;
 import com.example.identityservice.entity.User;
+import com.example.identityservice.enums.Role;
 import com.example.identityservice.exception.AppException;
 import com.example.identityservice.exception.ErrorCode;
 import com.example.identityservice.mapper.UserMapper;
@@ -39,6 +44,12 @@ public class UserService {
 		request.setPassword(encodedPassword);
 
 		User user = userMapper.toUser(request);
+
+		Set<String> roles = new HashSet<>();
+		roles.add(Role.USER.name());
+
+		user.setRoles(roles);
+
 		User newUser = userRepository.save(user);
 
 		return userMapper.toUserResponse(newUser);
@@ -58,5 +69,10 @@ public class UserService {
 		}
 		return false;
 
+	}
+
+	public List<UserResponse> getUsers() {
+		List<User> users = userRepository.findAll();
+		return users.stream().map(user -> userMapper.toUserResponse(user)).toList();
 	}
 }

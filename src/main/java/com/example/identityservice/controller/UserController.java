@@ -1,5 +1,7 @@
 package com.example.identityservice.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +28,16 @@ import lombok.experimental.FieldDefaults;
 public class UserController {
 
 	UserService userService;
+
+	@GetMapping()
+	public ResponseEntity<ApiResponse<List<UserResponse>>> getUsers() {
+		List<UserResponse> users = userService.getUsers();
+
+		ApiResponse<List<UserResponse>> response = ApiResponse.<List<UserResponse>>builder().code(1000).result(users)
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
 	@PostMapping
 	public ResponseEntity<ApiResponse<UserResponse>> createUser(@RequestBody @Valid CreateUserRequest request) {

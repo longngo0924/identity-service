@@ -1,5 +1,7 @@
 package com.example.identityservice.entity;
 
+import java.util.Set;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,7 +20,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="\"user\"")
+@Table(name = "\"user\"")
 public class User {
 
 	@Id
@@ -27,4 +29,5 @@ public class User {
 	String username;
 	String email;
 	String password;
+	Set<String> roles;
 }
