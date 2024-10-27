@@ -14,10 +14,12 @@ public enum ErrorCode {
 	INVALID_USERNAME(1003, "Username must be at least 8 characters", HttpStatus.BAD_REQUEST),
 	INVALID_PASSWORD(1004, "Password must be at least 8 characters", HttpStatus.BAD_REQUEST),
 	USER_NOT_EXISTED(1005, "User not existed", HttpStatus.NOT_FOUND),
-	UNAUTHORIZED(1006, "Unauthorized", HttpStatus.UNAUTHORIZED),
+	UNAUTHENTICATED(1006,
+			"Unauthenticated", HttpStatus.UNAUTHORIZED),
+	ACCESS_DENINED(1007, "Access denied", HttpStatus.FORBIDDEN),
 
-	INVALID_KEY(9998, "Uncategorized error", HttpStatus.BAD_REQUEST),
-	UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.BAD_REQUEST),;
+	INVALID_KEY(9998, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
+	UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),;
 
 	int code;
 	String message;

@@ -1,6 +1,7 @@
 package com.example.identityservice.exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,6 +52,17 @@ public class GlobalExceptionHandler {
 				.message(errorCode.getMessage()).build();
 
 		return new ResponseEntity<>(apiResponse, errorCode.getHttpStatus());
+
+	}
+
+	@ExceptionHandler(AccessDeniedException.class)
+	ResponseEntity<ApiResponse<Object>> handleAccessDeniedException(AccessDeniedException exception) {
+		log.error("Exception: {}", exception.getMessage());
+
+		ApiResponse<Object> apiResponse = ApiResponse.<Object>builder().code(ErrorCode.ACCESS_DENINED.getCode())
+				.message(ErrorCode.ACCESS_DENINED.getMessage()).build();
+
+		return new ResponseEntity<>(apiResponse, ErrorCode.ACCESS_DENINED.getHttpStatus());
 
 	}
 
