@@ -72,7 +72,7 @@ public class AuthenticationService {
 
 	private String generateToken(String username) {
 
-		JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
+		JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
 		int expireTime = Integer.parseInt(jwtExpireTime);
 
