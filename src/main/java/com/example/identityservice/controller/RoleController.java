@@ -1,7 +1,10 @@
 package com.example.identityservice.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.identityservice.dto.request.CreateRoleRequest;
 import com.example.identityservice.dto.response.ApiResponse;
+import com.example.identityservice.dto.response.PermissionResponse;
 import com.example.identityservice.dto.response.RoleResponse;
 import com.example.identityservice.service.RoleService;
 
@@ -30,5 +34,15 @@ public class RoleController {
 		ApiResponse<RoleResponse> response = ApiResponse.<RoleResponse>builder().code(1000).result(newRole).build();
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@GetMapping()
+	public ResponseEntity<ApiResponse<List<RoleResponse>>> getPermissions() {
+		List<RoleResponse> roles = roleService.getAll();
+
+		ApiResponse<List<RoleResponse>> response = ApiResponse.<List<RoleResponse>>builder().code(1000).result(roles)
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }
