@@ -1,5 +1,8 @@
 package com.example.identityservice.exception;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -8,11 +11,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.example.identityservice.dto.response.ApiResponse;
 
+import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+	private static final String MIN_VALUE = "min";
 
 	@ExceptionHandler(RuntimeException.class)
 	ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException exception) {
@@ -41,18 +47,32 @@ public class GlobalExceptionHandler {
 
 		ErrorCode errorCode = ErrorCode.INVALID_KEY;
 
+		Map<String, Object> attributes = new HashMap<>();
 		try {
 			String enumKey = exception.getFieldError().getDefaultMessage();
 			errorCode = ErrorCode.valueOf(enumKey);
+
+			var constraintViolation = exception.getBindingResult().getAllErrors().get(0)
+					.unwrap(ConstraintViolation.class);
+			attributes = constraintViolation.getConstraintDescriptor().getAttributes();
+
 		} catch (IllegalArgumentException e) {
 			log.error(e.getMessage());
 		}
 
-		ApiResponse<Object> apiResponse = ApiResponse.<Object>builder().code(errorCode.getCode())
-				.message(errorCode.getMessage()).build();
+		String errorMessage = attributes.isEmpty() ? errorCode.getMessage()
+				: bindErrorMessage(errorCode.getMessage(), attributes);
+
+		ApiResponse<Object> apiResponse = ApiResponse.<Object>builder().code(errorCode.getCode()).message(errorMessage)
+				.build();
 
 		return new ResponseEntity<>(apiResponse, errorCode.getHttpStatus());
 
+	}
+
+	private String bindErrorMessage(String message, Map<String, Object> attributes) {
+		String minValue = String.valueOf(attributes.get(MIN_VALUE));
+		return message.replace("{" + MIN_VALUE + "}", minValue);
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)
