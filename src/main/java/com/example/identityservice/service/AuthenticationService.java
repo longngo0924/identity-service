@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 import com.example.identityservice.dto.request.AuthenticationRequest;
 import com.example.identityservice.dto.request.IntrospectRequest;
 import com.example.identityservice.dto.request.LogoutRequest;
+import com.example.identityservice.dto.request.RefreshRequest;
 import com.example.identityservice.dto.response.AuthenticationResponse;
 import com.example.identityservice.dto.response.IntrospectResponse;
 import com.example.identityservice.dto.response.LogoutResponse;
@@ -64,10 +65,14 @@ public class AuthenticationService {
 	@Value("${jwt.expire-time}")
 	String jwtExpireTime;
 
+	@NonFinal
+	@Value("${jwt.refreshable-time}")
+	String jwtRefreshableTime;
+
 	public AuthenticationResponse authenticateUser(AuthenticationRequest request) {
 		User user = userRepository.findByUsername(request.getUsername())
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-		
+
 		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
 		boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
@@ -75,20 +80,27 @@ public class AuthenticationService {
 		if (!authenticated)
 			throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-		String token = generateToken(user);
+		String accessToken = generateToken(user, false);
+		String refreshToken = generateToken(user, true);
 
-		return AuthenticationResponse.builder().authenticated(true).token(token).build();
+		return AuthenticationResponse.builder().authenticated(true).access(accessToken).refresh(refreshToken).build();
 	}
 
-	private String generateToken(User user) {
+	private String generateToken(User user, boolean isRefresh) {
 
 		JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
 		int expireTime = Integer.parseInt(jwtExpireTime);
+		int refreshableTime = Integer.parseInt(jwtRefreshableTime);
+
+		Date expiryTimeEpochMilli = new Date(Instant.now().plus(expireTime, ChronoUnit.HOURS).toEpochMilli());
+		Date refreshableTimeEpochMilli = new Date(Instant.now().plus(refreshableTime, ChronoUnit.HOURS).toEpochMilli());
+
+		String scopes = isRefresh ? "REFRESH_TOKEN" : buildScope(user);
 
 		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().subject(user.getUsername()).issuer(jwtIssuer)
-				.issueTime(new Date()).claim("scope", buildScope(user)).jwtID(UUID.randomUUID().toString())
-				.expirationTime(new Date(Instant.now().plus(expireTime, ChronoUnit.HOURS).toEpochMilli())).build();
+				.issueTime(new Date()).claim("scope", scopes).jwtID(UUID.randomUUID().toString())
+				.expirationTime(isRefresh ? refreshableTimeEpochMilli : expiryTimeEpochMilli).build();
 
 		Payload payload = new Payload(claimsSet.toJSONObject());
 
@@ -154,7 +166,31 @@ public class AuthenticationService {
 		Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 		InvalidToken invalidToken = InvalidToken.builder().id(jwtId).expiryTime(expiryTime).build();
 		invalidTokenRepository.save(invalidToken);
-		
+
 		return LogoutResponse.builder().logout(true).build();
+	}
+
+	public AuthenticationResponse refresh(RefreshRequest request) throws JOSEException, ParseException {
+		boolean isValid = verifyToken(request.getToken());
+		if (!isValid)
+			throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+		SignedJWT signedJWT = SignedJWT.parse(request.getToken());
+
+		String scopes = signedJWT.getJWTClaimsSet().getClaim("scope").toString();
+
+		if (!"REFRESH_TOKEN".equals(scopes))
+			throw new AppException(ErrorCode.ACCESS_DENINED);
+
+		String username = signedJWT.getJWTClaimsSet().getSubject();
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+		String accessToken = generateToken(user, false);
+		String refreshToken = generateToken(user, true);
+
+		logout(LogoutRequest.builder().token(request.getToken()).build());
+
+		return AuthenticationResponse.builder().authenticated(true).access(accessToken).refresh(refreshToken).build();
 	}
 }

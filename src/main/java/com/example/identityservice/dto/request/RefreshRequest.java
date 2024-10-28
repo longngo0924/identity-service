@@ -1,4 +1,4 @@
-package com.example.identityservice.dto.response;
+package com.example.identityservice.dto.request;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,12 +9,9 @@ import lombok.experimental.FieldDefaults;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticationResponse {
-
-	String access;
-	String refresh;
-	boolean authenticated;
+@Builder
+public class RefreshRequest {
+	String token;
 }
