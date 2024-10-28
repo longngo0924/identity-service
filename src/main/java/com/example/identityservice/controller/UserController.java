@@ -61,7 +61,7 @@ public class UserController {
 	}
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable("id") String id,
+	public ResponseEntity<ApiResponse<UserResponse>> updateUserById(@PathVariable("id") String id,
 			@RequestBody UpdateUserRequest request) {
 		UserResponse user = userService.updateUser(id, request);
 		ApiResponse<UserResponse> response = ApiResponse.<UserResponse>builder().code(1000).result(user).build();
