@@ -42,6 +42,7 @@ public class GlobalExceptionHandler {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	ResponseEntity<ApiResponse<Object>> handleValidationException(MethodArgumentNotValidException exception) {
 

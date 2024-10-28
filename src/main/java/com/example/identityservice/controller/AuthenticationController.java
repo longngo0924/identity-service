@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.identityservice.dto.request.AuthenticationRequest;
 import com.example.identityservice.dto.request.IntrospectRequest;
+import com.example.identityservice.dto.request.LogoutRequest;
 import com.example.identityservice.dto.response.ApiResponse;
 import com.example.identityservice.dto.response.AuthenticationResponse;
 import com.example.identityservice.dto.response.IntrospectResponse;
+import com.example.identityservice.dto.response.LogoutResponse;
 import com.example.identityservice.service.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
 
@@ -34,6 +36,16 @@ public class AuthenticationController {
 		AuthenticationResponse authenticationResponse = authenticationService.authenticateUser(request);
 		ApiResponse<AuthenticationResponse> response = ApiResponse.<AuthenticationResponse>builder().code(1000)
 				.result(authenticationResponse).build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/logout")
+	public ResponseEntity<ApiResponse<LogoutResponse>> logout(@RequestBody LogoutRequest request)
+			throws JOSEException, ParseException {
+		LogoutResponse logoutResponse = authenticationService.logout(request);
+		ApiResponse<LogoutResponse> response = ApiResponse.<LogoutResponse>builder().code(1000).result(logoutResponse)
+				.build();
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

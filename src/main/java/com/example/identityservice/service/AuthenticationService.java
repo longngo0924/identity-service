@@ -5,19 +5,25 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.example.identityservice.dto.request.AuthenticationRequest;
 import com.example.identityservice.dto.request.IntrospectRequest;
+import com.example.identityservice.dto.request.LogoutRequest;
 import com.example.identityservice.dto.response.AuthenticationResponse;
 import com.example.identityservice.dto.response.IntrospectResponse;
+import com.example.identityservice.dto.response.LogoutResponse;
+import com.example.identityservice.entity.InvalidToken;
 import com.example.identityservice.entity.User;
 import com.example.identityservice.exception.AppException;
 import com.example.identityservice.exception.ErrorCode;
+import com.example.identityservice.repository.InvalidTokenRepository;
 import com.example.identityservice.repository.UserRepository;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -42,9 +48,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthenticationService {
 
-	PasswordEncoder passwordEncoder;
-
 	UserRepository userRepository;
+
+	InvalidTokenRepository invalidTokenRepository;
 
 	@NonFinal
 	@Value("${jwt.signing-key}")
@@ -61,6 +67,8 @@ public class AuthenticationService {
 	public AuthenticationResponse authenticateUser(AuthenticationRequest request) {
 		User user = userRepository.findByUsername(request.getUsername())
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+		
+		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
 		boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
@@ -79,7 +87,7 @@ public class AuthenticationService {
 		int expireTime = Integer.parseInt(jwtExpireTime);
 
 		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().subject(user.getUsername()).issuer(jwtIssuer)
-				.issueTime(new Date()).claim("scope", buildScope(user))
+				.issueTime(new Date()).claim("scope", buildScope(user)).jwtID(UUID.randomUUID().toString())
 				.expirationTime(new Date(Instant.now().plus(expireTime, ChronoUnit.HOURS).toEpochMilli())).build();
 
 		Payload payload = new Payload(claimsSet.toJSONObject());
@@ -113,14 +121,40 @@ public class AuthenticationService {
 	public IntrospectResponse introspectToken(IntrospectRequest request) throws JOSEException, ParseException {
 		String token = request.getToken();
 
+		boolean isValid = false;
+		try {
+			isValid = verifyToken(token);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+
+		return IntrospectResponse.builder().isValid(isValid).build();
+	}
+
+	public boolean verifyToken(String token) throws JOSEException, ParseException {
 		JWSVerifier jwsVerifier = new MACVerifier(jwtSigningKey.getBytes());
 		SignedJWT signedJWT = SignedJWT.parse(token);
 		boolean isValid = signedJWT.verify(jwsVerifier);
 
 		var expireTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-		boolean isExpired = expireTime.after(new Date());
+		boolean isNotExpired = expireTime.after(new Date());
 
-		return IntrospectResponse.builder().isValid(isValid && isExpired).build();
+		boolean isLogout = invalidTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID());
+
+		return isValid && isNotExpired && !isLogout;
+	}
+
+	public LogoutResponse logout(LogoutRequest request) throws JOSEException, ParseException {
+		if (!verifyToken(request.getToken()))
+			throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+		SignedJWT signedJWT = SignedJWT.parse(request.getToken());
+		String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
+		Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+		InvalidToken invalidToken = InvalidToken.builder().id(jwtId).expiryTime(expiryTime).build();
+		invalidTokenRepository.save(invalidToken);
+		
+		return LogoutResponse.builder().logout(true).build();
 	}
 }
