@@ -190,6 +190,9 @@
 						<exclude>com/example/identityservice/entity/**</exclude>
 						<exclude>com/example/identityservice/mapper/**</exclude>
 						<exclude>com/example/identityservice/configuration/**</exclude>
+						<exclude>com/example/identityservice/enums/**</exclude>
+						<exclude>com/example/identityservice/exception/**</exclude>
+						<exclude>com/example/identityservice/validator/**</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
