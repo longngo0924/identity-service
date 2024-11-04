@@ -30,7 +30,7 @@ public class RoleController {
 
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
-	public ResponseEntity<ApiResponse<RoleResponse>> createPermission(@RequestBody @Valid CreateRoleRequest request) {
+	public ResponseEntity<ApiResponse<RoleResponse>> createRole(@RequestBody @Valid CreateRoleRequest request) {
 		RoleResponse newRole = roleService.create(request);
 		ApiResponse<RoleResponse> response = ApiResponse.<RoleResponse>builder().code(1000).result(newRole).build();
 
@@ -39,7 +39,7 @@ public class RoleController {
 
 	@PreAuthorize("hasAuthority('READ_ROLE') || hasRole('ADMIN')")
 	@GetMapping()
-	public ResponseEntity<ApiResponse<List<RoleResponse>>> getPermissions() {
+	public ResponseEntity<ApiResponse<List<RoleResponse>>> getRoles() {
 		List<RoleResponse> roles = roleService.getAll();
 
 		ApiResponse<List<RoleResponse>> response = ApiResponse.<List<RoleResponse>>builder().code(1000).result(roles)
