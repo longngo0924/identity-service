@@ -1,6 +1,7 @@
 package com.example.identityservice.service;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,9 @@ public class PermissionService {
 	public List<PermissionResponse> getAll() {
 		List<Permission> permissions = permissionRepository.findAll();
 
-		return permissions.stream().map(permission -> permissionMapper.toPermissionResponse(permission)).toList();
+		Stream<Permission> stream = permissions.stream();
+
+		return stream.map(permission -> permissionMapper.toPermissionResponse(permission)).toList();
 
 	}
 
